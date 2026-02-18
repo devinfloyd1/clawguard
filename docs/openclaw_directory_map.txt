@@ -1,0 +1,76 @@
+# OpenClaw/Clawdbot Directory Structure Map
+# Generated: 2026-02-18
+# Note: This system uses "clawdbot" naming instead of "openclaw"
+
+## Main Configuration Directory
+~/.clawdbot/
+├── clawdbot.json              # Main configuration file
+├── clawdbot.json.bak          # Backup configs
+├── update-check.json          # Update tracking
+├── agents/
+│   └── main/
+│       └── sessions/          # Session data (JSONL files)
+│           └── sessions.json  # Session index
+├── credentials/
+│   ├── telegram-pairing.json  # Channel credentials
+│   └── telegram-allowFrom.json
+├── cron/
+│   └── jobs.json              # Scheduled jobs
+├── devices/
+│   ├── pending.json           # Pending device pairings
+│   └── paired.json            # Paired devices
+├── identity/
+│   ├── device.json            # Device identity
+│   └── device-auth.json       # Device authentication
+├── media/
+│   └── inbound/               # Received media files
+├── subagents/
+│   └── runs.json              # Subagent execution tracking
+└── telegram/
+    └── update-offset-*.json   # Channel state
+
+## Skills Directory (IMPORTANT FOR SCANNING)
+~/.npm-global/lib/node_modules/clawdbot/skills/
+├── <skill-name>/
+│   ├── SKILL.md               # Skill definition (REQUIRED)
+│   ├── scripts/               # Optional executable scripts
+│   │   ├── *.py               # Python scripts
+│   │   └── *.sh               # Shell scripts
+│   └── src/                   # Optional source code
+│       └── <module>/
+│           ├── __init__.py
+│           └── *.py
+
+## Skill Count: 52 skills installed
+
+## Skills with Python code:
+- openai-image-gen/scripts/gen.py
+- skill-creator/scripts/quick_validate.py
+- skill-creator/scripts/init_skill.py
+- skill-creator/scripts/package_skill.py
+- local-places/src/local_places/*.py
+- nano-banana-pro/scripts/generate_image.py
+- model-usage/scripts/model_usage.py
+
+## Skills with Shell scripts:
+- openai-whisper-api/scripts/transcribe.sh
+- tmux/scripts/*.sh
+- video-frames/scripts/frame.sh
+
+## Configuration File Format
+clawdbot.json contains:
+- Agent configuration
+- Channel settings (telegram, discord, slack, etc.)
+- Gateway authentication
+- Auth profiles (API keys)
+- Plugin settings
+
+## Session Log Format
+- JSONL (JSON Lines) format
+- Located in: ~/.clawdbot/agents/<agent-id>/sessions/
+- Includes conversation history, tool calls, etc.
+
+## Alternative Paths (for compatibility)
+- ~/.openclaw/ -> Not used in this installation
+- ~/.clawdbot/ -> Primary configuration directory
+- Skills can also be in: /usr/lib/node_modules/clawdbot/skills/
