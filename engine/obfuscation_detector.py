@@ -9,7 +9,7 @@ import math
 import re
 from typing import List
 
-from .scanner import Finding
+from .models import Finding
 
 
 class ObfuscationDetector:

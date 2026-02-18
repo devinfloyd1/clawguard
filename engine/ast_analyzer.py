@@ -7,7 +7,7 @@ Uses Python's ast module to detect dangerous patterns that regex might miss.
 import ast
 from typing import List
 
-from .scanner import Finding
+from .models import Finding
 
 
 class SecurityVisitor(ast.NodeVisitor):

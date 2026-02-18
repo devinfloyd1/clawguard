@@ -7,7 +7,7 @@ Extracts and analyzes URLs, IPs, and domains from code.
 import re
 from typing import List, Set
 
-from .scanner import Finding
+from .models import Finding
 
 
 class NetworkAnalyzer:

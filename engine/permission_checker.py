@@ -7,7 +7,7 @@ Compares what a skill says it does in SKILL.md against what the code actually do
 import re
 from typing import List, Set
 
-from .scanner import Finding
+from .models import Finding
 
 
 class PermissionChecker:

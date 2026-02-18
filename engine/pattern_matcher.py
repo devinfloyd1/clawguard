@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import List, Dict, Any
 
-from .scanner import Finding
+from .models import Finding
 
 
 class PatternMatcher:

@@ -4,7 +4,7 @@ Markdown Reporter - Human-readable markdown report for sharing.
 
 from typing import Optional
 
-from engine.scanner import ScanResult
+from engine.models import ScanResult
 
 
 class MarkdownReporter:

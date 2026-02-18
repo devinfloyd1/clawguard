@@ -4,7 +4,7 @@ Console Reporter - Colored terminal output for scan results.
 
 from typing import Optional
 
-from engine.scanner import ScanResult, Finding
+from engine.models import ScanResult, Finding
 
 
 class ConsoleReporter:

@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict
 from typing import Optional
 
-from engine.scanner import ScanResult
+from engine.models import ScanResult
 
 
 class JsonReporter:
