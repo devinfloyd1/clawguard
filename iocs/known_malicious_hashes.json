@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "source": "ClawGuard Initial Database",
+  "last_updated": "2026-02-18",
+  "description": "SHA256 hashes of known malicious files",
+  "hashes": []
+}

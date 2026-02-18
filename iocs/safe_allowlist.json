@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "source": "ClawGuard Initial Database",
+  "last_updated": "2026-02-18",
+  "description": "Known-safe patterns to reduce false positives",
+  "allowlist": [
+    {
+      "id": "SAFE-001",
+      "pattern": "subprocess.run\\(\\['python'",
+      "reason": "Running Python interpreter is common in skills",
+      "applies_to": ["CH-031"]
+    },
+    {
+      "id": "SAFE-002",
+      "pattern": "subprocess.run\\(\\['curl'",
+      "reason": "curl for HTTP requests is common and safe",
+      "applies_to": ["CH-031"]
+    },
+    {
+      "id": "SAFE-003",
+      "pattern": "os.getenv\\('HOME'\\)",
+      "reason": "Getting home directory is safe and common",
+      "applies_to": ["CH-038"]
+    },
+    {
+      "id": "SAFE-004",
+      "pattern": "os.getenv\\('PATH'\\)",
+      "reason": "Getting PATH is safe and common",
+      "applies_to": ["CH-038"]
+    },
+    {
+      "id": "SAFE-005",
+      "pattern": "requests.get\\('https://api\\.",
+      "reason": "API calls are generally legitimate",
+      "applies_to": ["CH-023"]
+    },
+    {
+      "id": "SAFE-006",
+      "pattern": "localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0",
+      "reason": "Local connections are safe",
+      "applies_to": ["CH-022", "CH-023"]
+    },
+    {
+      "id": "SAFE-007",
+      "pattern": "base64.b64decode\\(.*\\.encode\\(\\)",
+      "reason": "Encoding then decoding string is common pattern",
+      "applies_to": ["CH-033"]
+    },
+    {
+      "id": "SAFE-008",
+      "pattern": "shutil.copy\\(.*\\.(log|txt|json|md)",
+      "reason": "Copying common file types is usually safe",
+      "applies_to": ["CH-027"]
+    }
+  ]
+}

