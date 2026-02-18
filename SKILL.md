@@ -6,7 +6,7 @@ version: 0.1.0
 metadata: {"clawdbot":{"emoji":"🛡️","os":["darwin","linux","win32"]}}
 ---
 
-# 🛡️ ClawGuard
+# ClawGuard
 
 **Security Scanner for OpenClaw/Clawdbot Skills**
 
